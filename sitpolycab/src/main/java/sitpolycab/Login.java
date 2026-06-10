@@ -1,8 +1,15 @@
 package sitpolycab;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -10,6 +17,20 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class Login {
+	public static void takeScreenshot(WebDriver driver, String fileName) {
+        try {
+            String timestamp = LocalDateTime.now().toString().replace(":", "-");
+            File source = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            File destination = new File("./Screenshots/" + fileName + "_" + timestamp + ".png");
+            destination.getParentFile().mkdirs();
+            Files.copy(source.toPath(),destination.toPath(),StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("Screenshot saved: "+ destination.getAbsolutePath());
+        } catch (IOException e) 
+        {
+            System.out.println("Failed to capture screenshot: "
+                    + e.getMessage());
+        }
+    }
     public static void main(String[] args) {
         WebDriver driver = new ChromeDriver();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
@@ -41,24 +62,28 @@ public class Login {
             {
                 System.out.println("Login Failed : " + username);
                 System.out.println("Moving to next credentials...");
+                takeScreenshot(driver, "Login_Failed");
                 continue;
               }
          try {
                 wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("account-menu")));
                 System.out.println("Login Successful : " + username);
+                takeScreenshot(driver,"Login Success ");
 
               } 
          catch (Exception e)
          	{
                 System.out.println("Login Failed : " + username);
-                System.out.println(" The Username or password is incorrect");
+                System.out.println("The Username or password is incorrect");
                 System.out.println("Moving to next credentials...");
+                takeScreenshot(driver,"Login Failed ");
                 continue;
             }
                 wait.until(ExpectedConditions.elementToBeClickable(By.id("account-menu"))).click();
                 wait.until(ExpectedConditions.elementToBeClickable(By.id("logout"))).click();
                 wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login")));
                 System.out.println("Logout Successful");
+                takeScreenshot(driver,"Logout Successful");
             } 
         catch (Exception e)
         {
